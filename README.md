@@ -126,6 +126,7 @@ Examples
 Comments
 --------
 Input:
+
 	+       #x = 1
 	> ++ <  #y = 2
 
@@ -134,13 +135,16 @@ Input:
 	-       #    x--
 	> + <   #    y++
 	]       #(Result: y += x; x = 0)
+
 Output:
+
 	+>++<[->+<]
 
 
 Save-and-recall
 ---------------
 Input:
+
 	!
 	?  +   #x = 1
 	?> ++  #y = 2
@@ -152,8 +156,11 @@ Input:
 	?  ]       #(Result: y += x; x = 0)
 
 	?~
+
 Output:
+
 	+>++<[->+<]
+
 Note: the pushing and popping might not be needed here, but it is good
 practice for when we are going to write macros.
 
@@ -161,6 +168,7 @@ practice for when we are going to write macros.
 Simple macros
 -------------
 Input:
+
 	x(){}
 	y(){>}
 
@@ -175,13 +183,16 @@ Input:
 	? x() ]       #(Result: y += x; x = 0)
 
 	?~
+
 Output:
+
 	+>++<[->+<]
 
 
 Function macros
 ---------------
 Input:
+
 	# Add x to y:
 	# y += x; x = 0
 	addTo(x;y)
@@ -204,8 +215,11 @@ Input:
 	? addTo(x(); y())
 
 	?~
+
 Output:
+
 	+>++<[->+<]
+
 Note: inside the addTo macro, x and y are variables, so we have to use variable
 invocations ("x" and "y") instead of macro invocations("x()" and "y()").
 
@@ -213,6 +227,7 @@ invocations ("x" and "y") instead of macro invocations("x()" and "y()").
 Control structures
 ------------------
 Input:
+
 	0(){[-]}
 
 	#if(x) code1 else code2
@@ -242,8 +257,11 @@ Input:
 
 
 	ifelse(>>;++++++++;--------;>>>)
+
 Output:
+
 	>>>[-]+>[-]<<[<<++++++++>>>-<[>>+<<-]]>>[<<+>>-]<[<<<-------->>>-]<<<
+
 This demonstrates, among other things:
 * Macros can be defined inside macro definitions. Since reading and removing of
   macro definitions is the first step in evaluating a code block, their scope is
