@@ -49,9 +49,9 @@ A code block is evaluated in the following way:
 
 Macro definition
 ----------------
-Syntax: name([variable0[;variable1[;...]]]){<code block>}
+Syntax: name([variable0[;variable1[;...]]]){block}
 
-name, variable0, variable1, ... are identifiers.
+name, variable0, variable1, ... are identifiers. block is a code block.
 
 
 Macro invocation
@@ -110,8 +110,8 @@ The following commands exist:
   negative current position. Subsequently, the current position is set to zero.
 * ~ ("pop"): The current position is popped from the stack. The command is
   removed from the code.
-* > : The current position is incremented. The command is kept in the code.
-* < : The current position is decremented. The command is kept in the code.
+* &gt; : The current position is incremented. The command is kept in the code.
+* &lt; : The current position is decremented. The command is kept in the code.
 
 Examples
 ========
