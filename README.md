@@ -273,3 +273,217 @@ This demonstrates, among other things:
   However, evaluation of the global code block keeps iterating, and in the next
   iteration, 0() is recognized and evaluated.
 
+This example is evaluated step-by-step in the following way:
+
+Original:
+
+	0(){[-]}
+
+	#if(x) code1 else code2
+	ifelse(x;code1;code2;stack)
+	{
+		t0(){stack}
+		t1(){stack >}
+
+		!
+		? t0() 0() +      #t0 = 1
+		? t1() 0()        #t1 = 0
+		? x    [          #if x
+		?          code1  #    code1
+		? t0()     -      #    t0--
+		? x        [      #    while x
+		? t1()         +  #        t1++
+		? x        -]     #        x--
+		? x    ]
+		? t1() [          #while t1
+		? x        +      #    x++
+		? t1() -]         #    t1--
+		? t0() [          #if t0
+		?          code2  #    code2
+		? t0() -]         #    t0--
+		?~
+	}
+
+
+	ifelse(>>;++++++++;--------;>>>)
+
+Removing comments:
+
+	0(){[-]}
+
+	ifelse(x;code1;code2;stack)
+	{
+		t0(){stack}
+		t1(){stack >}
+
+		!
+		? t0() 0() +
+		? t1() 0()
+		? x    [
+		?          code1
+		? t0()     -
+		? x        [
+		? t1()         +
+		? x        -]
+		? x    ]
+		? t1() [
+		? x        +
+		? t1() -]
+		? t0() [
+		?          code2
+		? t0() -]
+		?~
+	}
+
+	ifelse(>>;++++++++;--------;>>>)
+
+Reading and removing macros:
+
+0():
+
+	[-]
+
+ifelse(x;code1;code2;stack):
+
+	t0(){stack}
+	t1(){stack >}
+
+	!
+	? t0() 0() +
+	? t1() 0()
+	? x    [
+	?          code1
+	? t0()     -
+	? x        [
+	? t1()         +
+	? x        -]
+	? x    ]
+	? t1() [
+	? x        +
+	? t1() -]
+	? t0() [
+	?          code2
+	? t0() -]
+	?~
+
+code:
+
+	ifelse(>>;++++++++;--------;>>>)
+
+Evaluating macros in ifelse invocation:
+
+ifelse(x=>>;code1=++++++++;code2=--------;stack=>>>):
+
+	!
+	? stack 0() +
+	? stack > 0()
+	? x    [
+	?          code1
+	? stack     -
+	? x        [
+	? stack >         +
+	? x        -]
+	? x    ]
+	? stack > [
+	? x        +
+	? stack > -]
+	? stack [
+	?          code2
+	? stack -]
+	?~
+
+Evaluating variables in ifelse invocation:
+
+ifelse(x=>>;code1=++++++++;code2=--------;stack=>>>):
+
+	!
+	? >>> 0() +
+	? >>> > 0()
+	? >>    [
+	?          ++++++++
+	? >>>     -
+	? >>        [
+	? >>> >         +
+	? >>        -]
+	? >>    ]
+	? >>> > [
+	? >>        +
+	? >>> > -]
+	? >>> [
+	?          --------
+	? >>> -]
+	?~
+
+Filling in ifelse invocation:
+
+0():
+
+	[-]
+
+Code:
+
+	!
+	? >>> 0() +
+	? >>> > 0()
+	? >>    [
+	?          ++++++++
+	? >>>     -
+	? >>        [
+	? >>> >         +
+	? >>        -]
+	? >>    ]
+	? >>> > [
+	? >>        +
+	? >>> > -]
+	? >>> [
+	?          --------
+	? >>> -]
+	?~
+
+Filling in 0() invocations:
+
+	!
+	? >>> [-] +
+	? >>> > [-]
+	? >>    [
+	?          ++++++++
+	? >>>     -
+	? >>        [
+	? >>> >         +
+	? >>        -]
+	? >>    ]
+	? >>> > [
+	? >>        +
+	? >>> > -]
+	? >>> [
+	?          --------
+	? >>> -]
+	?~
+
+Save-and-recall evaluation:
+
+	     >>>[-]+
+	<<<  >>>>[-]
+	<<<< >>[
+	<<   ++++++++
+	     >>>-
+	<<<  >>[
+	<<   >>>>+
+	<<<< >>-]
+	<<   >>]
+	<<   >>>>[
+	<<<< >>+
+	<<   >>>>-]
+	<<<< >>>[
+	<<<  --------
+	     >>>-]
+	<<<
+
+Remove non-Brainfuck characters:
+
+	>>>[-]+<<<>>>>[-]<<<<>>[<<++++++++>>>-<<<>>[<<>>>>+<<<<>>-]<<>>]<<>>>>[<<<<>>+<<>>>>-]<<<<>>>[<<<-------->>>-]<<<
+
+Optimize code:
+
+	>>>[-]+>[-]<<[<<++++++++>>>-<[>>+<<-]]>>[<<+>>-]<[<<<-------->>>-]<<<
+
