@@ -39,7 +39,7 @@ Code block evaluation uses a namespace as input. A namespace contains a
 name -> value mapping, where the value is a piece of code.
 
 A code block is evaluated in the following way:
-* Macro definitions are read.
+* Macro definitions are read and removed.
 * Any macro invocations that match macro definitions in the code block are
   evaluated. This is performed repeatedly, until there are no more matches.
 * Any variable invocations that match namespace elements are evaluated.
@@ -113,7 +113,145 @@ The following commands exist:
 * &gt; : The current position is incremented. The command is kept in the code.
 * &lt; : The current position is decremented. The command is kept in the code.
 
+Note that this works quite intuitively on simple code, but mixing
+save-and-recall with complicated Brainfuck code (especially when '>' and '<' are
+not matched inside a loop) can give unexpected results. In those cases it is
+usually a good approach to push before the complicated code, pop afterwards,
+and manually ensure that the complicated code always ends at the same memory
+location as where it started.
+
 Examples
 ========
-TODO
+
+Comments
+--------
+Input:
+	+       #x = 1
+	> ++ <  #y = 2
+
+	# Add x and y:
+	[       #while x
+	-       #    x--
+	> + <   #    y++
+	]       #(Result: y += x; x = 0)
+Output:
+	+>++<[->+<]
+
+
+Save-and-recall
+---------------
+Input:
+	!
+	?  +   #x = 1
+	?> ++  #y = 2
+
+	# Add x and y:
+	?  [       #while x
+	?  -       #    x--
+	?> +       #    y++
+	?  ]       #(Result: y += x; x = 0)
+
+	?~
+Output:
+	+>++<[->+<]
+Note: the pushing and popping might not be needed here, but it is good
+practice for when we are going to write macros.
+
+
+Simple macros
+-------------
+Input:
+	x(){}
+	y(){>}
+
+	!
+	? x() +   #x = 1
+	? y() ++  #y = 2
+
+	# Add x and y:
+	? x() [       #while x
+	? x() -       #    x--
+	? y() +       #    y++
+	? x() ]       #(Result: y += x; x = 0)
+
+	?~
+Output:
+	+>++<[->+<]
+
+
+Function macros
+---------------
+Input:
+	# Add x to y:
+	# y += x; x = 0
+	addTo(x;y)
+	{
+		!
+		? x [       #while x
+		? x -       #    x--
+		? y +       #    y++
+		? x ]
+		?~
+	}
+
+	x(){}
+	y(){>}
+
+	!
+	? x() +   #x = 1
+	? y() ++  #y = 2
+
+	? addTo(x(); y())
+
+	?~
+Output:
+	+>++<[->+<]
+Note: inside the addTo macro, x and y are variables, so we have to use variable
+invocations ("x" and "y") instead of macro invocations("x()" and "y()").
+
+
+Control structures
+------------------
+Input:
+	0(){[-]}
+
+	#if(x) code1 else code2
+	ifelse(x;code1;code2;stack)
+	{
+		t0(){stack}
+		t1(){stack >}
+
+		!
+		? t0() 0() +      #t0 = 1
+		? t1() 0()        #t1 = 0
+		? x    [          #if x
+		?          code1  #    code1
+		? t0()     -      #    t0--
+		? x        [      #    while x
+		? t1()         +  #        t1++
+		? x        -]     #        x--
+		? x    ]
+		? t1() [          #while t1
+		? x        +      #    x++
+		? t1() -]         #    t1--
+		? t0() [          #if t0
+		?          code2  #    code2
+		? t0() -]         #    t0--
+		?~
+	}
+
+
+	ifelse(>>;++++++++;--------;>>>)
+Output:
+	>>>[-]+>[-]<<[<<++++++++>>>-<[>>+<<-]]>>[<<+>>-]<[<<<-------->>>-]<<<
+This demonstrates, among other things:
+* Macros can be defined inside macro definitions. Since reading and removing of
+  macro definitions is the first step in evaluating a code block, their scope is
+  limited to the inside of the macro.
+* Code can be passed as argument value.
+* Macros defined outside a macro can be used inside the macro: in this example,
+  0() is used inside ifelse(). This works because, in the initial evaluation of
+  the ifelse() invocation, 0() is unmatched, and it is kept un-evaluated.
+  However, evaluation of the global code block keeps iterating, and in the next
+  iteration, 0() is recognized and evaluated.
 
